@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
-import { useExpenses } from '@/lib/hooks';
+import { useExpenses } from '@/contexts/expenses.context';
 import { Expense } from '@/models';
 
 export default function Dashboard() {
@@ -22,8 +22,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-10">
-      <h1 className="text-2xl font-bold text-center mb-6">Dashboard</h1>
+    <div className="max-w-3xl">
       <div className="flex justify-end mb-4">
         <button
           onClick={handleAddExpense}
@@ -43,10 +42,6 @@ export default function Dashboard() {
   );
 }
 
-// function isReadyToSubmit({ amount, category, description }: Partial<Expense>) {
-//   return amount && category && description;
-// }
-
 function ExpenseForm({
   expense,
   onClose,
@@ -54,14 +49,16 @@ function ExpenseForm({
   expense?: Expense;
   onClose: () => void;
 }) {
-  const { dispatch } = useExpenses();
+  const { state, expenseService } = useExpenses();
+  const { categories } = state;
+
   const [formData, setFormData] = useState<Expense>({
     id: expense ? expense.id : '',
     amount: expense ? expense.amount : 0,
     date: expense ? expense.date : '',
     category: expense ? expense.category : '',
     description: expense ? expense.description : '',
-    source: 'cash',
+    paymentMethod: expense ? expense.paymentMethod : 'cash',
   });
 
   const handleChange = (
@@ -73,12 +70,9 @@ function ExpenseForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (expense) {
-      dispatch({ type: 'EDIT_EXPENSE', payload: formData });
+      console.error('Not implemented');
     } else {
-      dispatch({
-        type: 'ADD_EXPENSE',
-        payload: { ...formData, id: Date.now().toString() },
-      });
+      expenseService.addExpense(formData);
     }
     onClose();
   };
@@ -134,11 +128,11 @@ function ExpenseForm({
           required
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
         >
-          <option value="Food">Food</option>
-          <option value="Transport">Transport</option>
-          <option value="Utilities">Utilities</option>
-          <option value="Entertainment">Entertainment</option>
-          <option value="Other">Other</option>
+          {categories.map((category) => (
+            <option key={category.name} value={category.name}>
+              {category.name}
+            </option>
+          ))}
         </select>
       </div>
       <div className="mb-4">
@@ -168,7 +162,7 @@ function ExpenseForm({
         <select
           id="source"
           name="source"
-          value={formData.source}
+          value={formData.paymentMethod}
           onChange={handleChange}
           required
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
@@ -197,17 +191,18 @@ function ExpenseForm({
 }
 
 function ExpenseList({ onEdit }: { onEdit: (expense: Expense) => void }) {
-  const { state, dispatch } = useExpenses();
+  const { state, expenseService } = useExpenses();
+  const { expenses } = state;
 
-  const handleDelete = (id: string) => {
-    dispatch({ type: 'DELETE_EXPENSE', payload: id });
-  };
+  const handleDelete = useCallback((id: string) => {
+    expenseService.deleteExpense(id);
+  }, []);
 
   return (
     <div className="bg-white p-4 rounded-md shadow-md">
       <h2 className="text-lg font-medium mb-4">Expense List</h2>
       <ul className="space-y-4">
-        {state.expenses.map((expense) => (
+        {expenses.map((expense) => (
           <li
             key={expense.id}
             className="flex items-center justify-between p-2 border-b last:border-b-0"
@@ -219,7 +214,9 @@ function ExpenseList({ onEdit }: { onEdit: (expense: Expense) => void }) {
               <span className="text-sm text-gray-500">
                 {expense.description}
               </span>
-              <span className="text-sm text-gray-500">{expense.source}</span>
+              <span className="text-sm text-gray-500">
+                {expense.paymentMethod}
+              </span>
             </div>
             <div className="flex space-x-2">
               <button
