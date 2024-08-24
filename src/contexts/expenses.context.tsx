@@ -93,7 +93,7 @@ export function useSyncFromDb(
   return { isLoading: status === 'loading', isSuccess: status === 'success' };
 }
 
-const ExpensesContext = createContext<Context | null>(null);
+export const ExpensesContext = createContext<Context | null>(null);
 
 export const ExpensesProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
