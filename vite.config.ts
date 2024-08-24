@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt'],
+      includeAssets: ['favicon-16x16', 'favicon-32x32', 'robots.txt'],
       manifest: {
         name: 'Money Management',
         short_name: 'MM',
