@@ -15,6 +15,8 @@ export default defineConfig({
         description: 'A simple and effective expense management app.',
         theme_color: '#ffffff',
         background_color: '#ffffff',
+        display: 'standalone',
+        orientation: 'portrait-primary',
         start_url: '/',
         icons: [
           {
