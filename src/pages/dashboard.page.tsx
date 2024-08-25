@@ -1,240 +1,159 @@
-import React, { useCallback, useState } from 'react';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Plus,
+  Send,
+} from 'lucide-react';
+import { useCallback, useMemo, useState } from 'react';
 
-import { useExpenses } from '@/contexts/expenses.context';
-import { Expense } from '@/models';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function Dashboard() {
-  const [isFormOpen, setFormOpen] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
 
-  const handleAddExpense = () => {
-    setEditingExpense(null);
-    setFormOpen(true);
-  };
+  const prevMonth = useCallback(() => {
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1),
+    );
+  }, [currentMonth]);
 
-  const handleEditExpense = (expense: Expense) => {
-    setEditingExpense(expense);
-    setFormOpen(true);
-  };
+  const nextMonth = useCallback(() => {
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1),
+    );
+  }, [currentMonth]);
 
-  const handleCloseForm = () => {
-    setFormOpen(false);
-  };
-
-  return (
-    <div className="max-w-3xl">
-      <div className="flex justify-end mb-4">
-        <button
-          onClick={handleAddExpense}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700"
-        >
-          Add Expense
-        </button>
-      </div>
-      {isFormOpen && (
-        <ExpenseForm
-          expense={editingExpense || undefined}
-          onClose={handleCloseForm}
-        />
-      )}
-      <ExpenseList onEdit={handleEditExpense} />
-    </div>
+  const formattedMonth = useMemo(
+    () =>
+      currentMonth.toLocaleString('default', {
+        month: 'long',
+        year: 'numeric',
+      }),
+    [currentMonth],
   );
-}
-
-function ExpenseForm({
-  expense,
-  onClose,
-}: {
-  expense?: Expense;
-  onClose: () => void;
-}) {
-  const { state, expenseService } = useExpenses();
-  const { categories } = state;
-
-  const [formData, setFormData] = useState<Expense>({
-    id: expense ? expense.id : '',
-    amount: expense ? expense.amount : 0,
-    date: expense ? expense.date : '',
-    category: expense ? expense.category : '',
-    description: expense ? expense.description : '',
-    paymentMethod: expense ? expense.paymentMethod : 'cash',
-  });
-
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (expense) {
-      console.error('Not implemented');
-    } else {
-      expenseService.addExpense(formData);
-    }
-    onClose();
-  };
 
   return (
-    <form className="bg-white p-4 rounded-md shadow-md" onSubmit={handleSubmit}>
-      <div className="mb-4">
-        <label
-          htmlFor="amount"
-          className="block text-sm font-medium text-gray-700"
+    <main className="overflow-y-auto p-4 space-y-6">
+      <Card className="bg-primary text-primary-foreground">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">$2,500.00</div>
+          <p className="text-sm opacity-85">+$250 this month</p>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-4 gap-4">
+        <Button
+          variant="outline"
+          className="flex flex-col items-center justify-center h-20"
         >
-          Amount:
-        </label>
-        <input
-          type="number"
-          id="amount"
-          name="amount"
-          value={formData.amount}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-        />
+          <Send className="h-6 w-6 mb-2" />
+          <span className="text-xs">Send</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="flex flex-col items-center justify-center h-20"
+        >
+          <ArrowDownIcon className="h-6 w-6 mb-2" />
+          <span className="text-xs">Receive</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="flex flex-col items-center justify-center h-20"
+        >
+          <CreditCard className="h-6 w-6 mb-2" />
+          <span className="text-xs">Cards</span>
+        </Button>
+        <Button
+          variant="outline"
+          className="flex flex-col items-center justify-center h-20"
+        >
+          <Plus className="h-6 w-6 mb-2" />
+          <span className="text-xs">Top Up</span>
+        </Button>
       </div>
-      <div className="mb-4">
-        <label
-          htmlFor="date"
-          className="block text-sm font-medium text-gray-700"
+
+      <div className="flex items-center justify-between">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={prevMonth}
+          aria-label="Previous month"
         >
-          Date:
-        </label>
-        <input
-          type="date"
-          id="date"
-          name="date"
-          value={formData.date}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-        />
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <h2 className="text-lg font-semibold">{formattedMonth}</h2>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={nextMonth}
+          aria-label="Next month"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
       </div>
-      <div className="mb-4">
-        <label
-          htmlFor="category"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Category:
-        </label>
-        <select
-          id="category"
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-        >
-          {categories.map((category) => (
-            <option key={category.name} value={category.name}>
-              {category.name}
-            </option>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Recent Transactions</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {[
+            { name: 'Grocery Store', amount: -45.5, date: 'Today' },
+            { name: 'Salary Deposit', amount: 2500.0, date: 'Yesterday' },
+            { name: 'Electric Bill', amount: -75.2, date: '3 days ago' },
+            { name: 'Online Shopping', amount: -120.99, date: '1 week ago' },
+            { name: 'Grocery Store', amount: -45.5, date: 'Today' },
+            { name: 'Salary Deposit', amount: 2500.0, date: 'Yesterday' },
+            { name: 'Electric Bill', amount: -75.2, date: '3 days ago' },
+            { name: 'Online Shopping', amount: -120.99, date: '1 week ago' },
+            { name: 'Grocery Store', amount: -45.5, date: 'Today' },
+            { name: 'Salary Deposit', amount: 2500.0, date: 'Yesterday' },
+            { name: 'Electric Bill', amount: -75.2, date: '3 days ago' },
+            { name: 'Online Shopping', amount: -120.99, date: '1 week ago' },
+            { name: 'Grocery Store', amount: -45.5, date: 'Today' },
+            { name: 'Salary Deposit', amount: 2500.0, date: 'Yesterday' },
+            { name: 'Electric Bill', amount: -75.2, date: '3 days ago' },
+            { name: 'Online Shopping', amount: -120.99, date: '1 week ago' },
+            { name: 'Grocery Store', amount: -45.5, date: 'Today' },
+            { name: 'Salary Deposit', amount: 2500.0, date: 'Yesterday' },
+            { name: 'Electric Bill', amount: -75.2, date: '3 days ago' },
+            { name: 'Online Shopping', amount: -120.99, date: '1 week ago' },
+          ].map((transaction, index) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <div
+                  className={`p-2 rounded-full ${transaction.amount > 0 ? 'bg-green-100' : 'bg-red-100'}`}
+                >
+                  {transaction.amount > 0 ? (
+                    <ArrowDownIcon className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <ArrowUpIcon className="h-4 w-4 text-red-600" />
+                  )}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{transaction.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {transaction.date}
+                  </p>
+                </div>
+              </div>
+              <p
+                className={`text-sm font-semibold ${transaction.amount > 0 ? 'text-green-600' : 'text-red-600'}`}
+              >
+                {transaction.amount > 0 ? '+' : ''}
+                {transaction.amount.toFixed(2)}
+              </p>
+            </div>
           ))}
-        </select>
-      </div>
-      <div className="mb-4">
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Description:
-        </label>
-        <input
-          type="text"
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-        />
-      </div>
-      <div className="mb-4">
-        <label
-          htmlFor="source"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Payment Method:
-        </label>
-        <select
-          id="source"
-          name="source"
-          value={formData.paymentMethod}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm"
-        >
-          <option value="cash">Cash</option>
-          <option value="credit">Credit Card</option>
-        </select>
-      </div>
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700"
-        >
-          {expense ? 'Update' : 'Add'} Expense
-        </button>
-        <button
-          type="button"
-          onClick={onClose}
-          className="ml-2 px-4 py-2 bg-gray-500 text-white rounded-md shadow-sm hover:bg-gray-600"
-        >
-          Cancel
-        </button>
-      </div>
-    </form>
-  );
-}
-
-function ExpenseList({ onEdit }: { onEdit: (expense: Expense) => void }) {
-  const { state, expenseService } = useExpenses();
-  const { expenses } = state;
-
-  const handleDelete = useCallback((id: string) => {
-    expenseService.deleteExpense(id);
-  }, []);
-
-  return (
-    <div className="bg-white p-4 rounded-md shadow-md">
-      <h2 className="text-lg font-medium mb-4">Expense List</h2>
-      <ul className="space-y-4">
-        {expenses.map((expense) => (
-          <li
-            key={expense.id}
-            className="flex items-center justify-between p-2 border-b last:border-b-0"
-          >
-            <div className="flex flex-col">
-              <span className="font-semibold">{expense.amount}</span>
-              <span className="text-sm text-gray-500">{expense.date}</span>
-              <span className="text-sm text-gray-500">{expense.category}</span>
-              <span className="text-sm text-gray-500">
-                {expense.description}
-              </span>
-              <span className="text-sm text-gray-500">
-                {expense.paymentMethod}
-              </span>
-            </div>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => onEdit(expense)}
-                className="px-4 py-2 bg-yellow-500 text-white rounded-md shadow-sm hover:bg-yellow-600"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(expense.id)}
-                className="px-4 py-2 bg-red-600 text-white rounded-md shadow-sm hover:bg-red-700"
-              >
-                Delete
-              </button>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
+        </CardContent>
+      </Card>
+    </main>
   );
 }

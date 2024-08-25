@@ -1,10 +1,14 @@
-import { Pencil2Icon } from '@radix-ui/react-icons';
+import { CreditCard, Home, PieChart, User } from 'lucide-react';
 import { Link, LinkProps, Outlet } from 'react-router-dom';
+
+import { Button } from '@/components/ui/button';
 
 export default function Layout() {
   return (
-    <main className="h-screen pt-5 pb-5 relative">
-      <Outlet />
+    <main className="h-screen flex flex-col">
+      <div className="flex-1 overflow-y-scroll overflow-x-hidden">
+        <Outlet />
+      </div>
       <NavBar />
     </main>
   );
@@ -12,25 +16,31 @@ export default function Layout() {
 
 function NavBar() {
   return (
-    <div className="absolute w-full bottom-0 left-0 flex items-center">
-      <NavButton icon={<Pencil2Icon />} to="/" />
-      <NavButton icon={<Pencil2Icon />} to="category" />
-      <NavButton icon={<Pencil2Icon />} to="2" />
-      <NavButton icon={<Pencil2Icon />} to="3" />
-    </div>
+    <footer className="bottom-0 left-0 w-full border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] bg-white">
+      <nav className="flex justify-around">
+        <NavButton icon={<Home />} to="/" label="Home" />
+        <NavButton icon={<PieChart />} to="category" label="Analytics" />
+        <NavButton icon={<CreditCard />} to="2" label="Sources" />
+        <NavButton icon={<User />} to="3" label="Profile" />
+      </nav>
+    </footer>
   );
 }
 
 function NavButton({
   icon,
+  label,
   ...linkProps
-}: { icon: React.ReactNode } & LinkProps) {
+}: { icon: React.ReactNode; label: string } & LinkProps) {
   return (
     <Link
-      className="flex-1 flex justify-center items-center py-4"
+      className="flex-1 flex justify-center items-center pt-2 pb-4"
       {...linkProps}
     >
-      {icon}
+      <Button variant="ghost" className="flex flex-col items-center">
+        {icon}
+        <span className="text-xs">{label}</span>
+      </Button>
     </Link>
   );
 }
